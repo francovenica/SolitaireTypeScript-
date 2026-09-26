@@ -303,7 +303,9 @@ if (context) {
                 return;
             renderAll(context, x, y);
         }
-        lastPointUp = Date.now();
+        else {
+            lastPointUp = Date.now();
+        }
         renderAll(context, x, y);
     });
     function isGameWon() {
