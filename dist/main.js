@@ -19,6 +19,8 @@ let cardOffsetY = 0;
 let gameWon = false;
 let minutes = 0;
 let seconds = 0;
+let lastPointUp = Date.now();
+let currentPointUp = 0;
 for (let i = 0; i < 7; i++)
     tableau.push([]); //es necesario inicializar cada array con uno vacio. Pide las lecciones al agente para mas info
 const suffle = function (stockDeck) {
@@ -88,10 +90,10 @@ if (context) {
         draggedCardOrigin = [];
         draggedCardOriginPos = { originX: 0, originY: 0 };
     }
-    canvas.addEventListener("mousedown", (event) => {
+    canvas.addEventListener("pointerdown", (event) => {
         const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (event.clientY - rect.top) * (canvas.height / rect.height);
         if (wrapItUp(x, y))
             return;
         if (y > 250) //the click is in the tableau
@@ -150,18 +152,18 @@ if (context) {
         }
         renderAll(context, x, y);
     });
-    canvas.addEventListener("mousemove", (event) => {
+    canvas.addEventListener("pointermove", (event) => {
         const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (event.clientY - rect.top) * (canvas.height / rect.height);
         if (wrapItUp(x, y))
             return;
         renderAll(context, x, y);
     });
-    canvas.addEventListener("mouseup", (event) => {
+    canvas.addEventListener("pointerup", (event) => {
         const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (event.clientY - rect.top) * (canvas.height / rect.height);
         let placed = true;
         if (clickInRect(x, y, START_BUTTON.posx, START_BUTTON.posy, START_BUTTON.width, START_BUTTON.height)) {
             stockDeck = [...allCards];
@@ -254,52 +256,54 @@ if (context) {
                 clearDraggedCards();
             }
         }
-        renderAll(context, x, y);
-    });
-    canvas.addEventListener("dblclick", (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        if (clickInRect(x, y, positionX.wasteDeck, positionY.upper_row, CARD_WIDTH, CARD_HEIGHT) && wasteDeck.length > 0) {
-            const lastCard = wasteDeck[wasteDeck.length - 1];
-            if (lastCard.value === 1) {
-                const card = wasteDeck.pop();
-                if (card !== undefined)
-                    foundations[card.suit].push(card);
-            }
-            else if (foundations[lastCard.suit].length > 0) {
-                const lastFoundCardIndex = foundations[lastCard.suit].length - 1;
-                if (lastCard.value === foundations[lastCard.suit][lastFoundCardIndex].value + 1) {
+        currentPointUp = Date.now();
+        if (currentPointUp - lastPointUp < 350) { //ex evento double click
+            if (clickInRect(x, y, positionX.wasteDeck, positionY.upper_row, CARD_WIDTH, CARD_HEIGHT) && wasteDeck.length > 0) {
+                const lastCard = wasteDeck[wasteDeck.length - 1];
+                if (lastCard.value === 1) {
                     const card = wasteDeck.pop();
                     if (card !== undefined)
-                        foundations[lastCard.suit].push(card);
+                        foundations[card.suit].push(card);
                 }
-            }
-        }
-        if (y > 260) {
-            let ColumnIndex = columnPositionsX.findIndex(element => x > element && x < element + CARD_WIDTH);
-            let lastCardValidation = tableau[ColumnIndex].at(-1); //Esto te trae el ultimo elemento del array, un -2 traeria el ante ultimo
-            if (lastCardValidation !== undefined &&
-                clickInRect(x, y, lastCardValidation?.posx, lastCardValidation?.posy, CARD_WIDTH, CARD_HEIGHT)) {
-                const lastFoundationCard = foundations[lastCardValidation.suit].at(-1);
-                if (lastCardValidation.value === 1 && foundations[lastCardValidation.suit].length === 0) {
-                    const lastCard = tableau[ColumnIndex].pop();
-                    if (lastCard !== undefined)
-                        foundations[lastCard.suit].push(lastCard);
-                }
-                else {
-                    if (lastFoundationCard !== undefined && lastCardValidation.value === lastFoundationCard.value + 1) {
-                        const lastCard = tableau[ColumnIndex].pop();
-                        if (lastCard !== undefined)
-                            foundations[lastCard.suit].push(lastCard);
+                else if (foundations[lastCard.suit].length > 0) {
+                    const lastFoundCardIndex = foundations[lastCard.suit].length - 1;
+                    if (lastCard.value === foundations[lastCard.suit][lastFoundCardIndex].value + 1) {
+                        const card = wasteDeck.pop();
+                        if (card !== undefined)
+                            foundations[lastCard.suit].push(card);
                     }
                 }
-                if (tableau[ColumnIndex].length > 0)
-                    tableau[ColumnIndex][tableau[ColumnIndex].length - 1].faceUp = true;
             }
+            if (y > 260) {
+                let ColumnIndex = columnPositionsX.findIndex(element => x > element && x < element + CARD_WIDTH);
+                if (ColumnIndex !== -1) {
+                    let lastCardValidation = tableau[ColumnIndex].at(-1); //Esto te trae el ultimo elemento del array, un -2 traeria el ante ultimo
+                    if (lastCardValidation !== undefined &&
+                        clickInRect(x, y, lastCardValidation?.posx, lastCardValidation?.posy, CARD_WIDTH, CARD_HEIGHT)) {
+                        const lastFoundationCard = foundations[lastCardValidation.suit].at(-1);
+                        if (lastCardValidation.value === 1 && foundations[lastCardValidation.suit].length === 0) {
+                            const lastCard = tableau[ColumnIndex].pop();
+                            if (lastCard !== undefined)
+                                foundations[lastCard.suit].push(lastCard);
+                        }
+                        else {
+                            if (lastFoundationCard !== undefined && lastCardValidation.value === lastFoundationCard.value + 1) {
+                                const lastCard = tableau[ColumnIndex].pop();
+                                if (lastCard !== undefined)
+                                    foundations[lastCard.suit].push(lastCard);
+                            }
+                        }
+                        if (tableau[ColumnIndex].length > 0)
+                            tableau[ColumnIndex][tableau[ColumnIndex].length - 1].faceUp = true;
+                    }
+                }
+            }
+            lastPointUp = 0;
+            if (wrapItUp(x, y))
+                return;
+            renderAll(context, x, y);
         }
-        if (wrapItUp(x, y))
-            return;
+        lastPointUp = Date.now();
         renderAll(context, x, y);
     });
     function isGameWon() {

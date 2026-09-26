@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8" / name="viewport" content="width=device-width, initial-scale=1">
   <title>Solitaire</title>
   <style>
     body {
@@ -14,7 +14,10 @@
     }
     canvas {
       background: #2e7d32;
-      border: 2px solid #0d3311;
+      outline: 2px solid #0d3311;
+      width: min(95vw, calc(95vh * 10/9));
+      height: auto;
+      touch-action: none;
     }
   </style>
 </head>

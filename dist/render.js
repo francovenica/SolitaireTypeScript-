@@ -139,6 +139,8 @@ const renderEndGame = function (context, label) {
     context.fillText(label.text, label.posx + label.textPosx, label.posy + label.textPosy);
     context.fillStyle = "white";
     context.font = "40px sans-serif";
-    context.fillText(label.textTime + minutes + " : " + seconds, label.posx + label.textTimePosx, label.posy + label.textTimePosy);
+    const mins = minutes > 9 ? minutes : "0" + minutes;
+    const secs = seconds > 9 ? seconds : "0" + seconds;
+    context.fillText(label.textTime + mins + " : " + secs, label.posx + label.textTimePosx, label.posy + label.textTimePosy);
 };
 //# sourceMappingURL=render.js.map
