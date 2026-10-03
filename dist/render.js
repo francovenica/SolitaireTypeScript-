@@ -127,6 +127,8 @@ const renderAll = function (context, x, y) {
         });
     }
     renderStartButton(context, START_BUTTON);
+    if (autoFinishUserOption)
+        renderAutoFinishBtn(context, AUTOFINISH_BTN);
 };
 const renderEndGame = function (context, label) {
     context.fillStyle = "#2b95fb";
@@ -142,5 +144,15 @@ const renderEndGame = function (context, label) {
     const mins = minutes > 9 ? minutes : "0" + minutes;
     const secs = seconds > 9 ? seconds : "0" + seconds;
     context.fillText(label.textTime + mins + " : " + secs, label.posx + label.textTimePosx, label.posy + label.textTimePosy);
+};
+const renderAutoFinishBtn = function (context, button) {
+    context.fillStyle = "#555";
+    context.fillRect(button.posx, button.posy, button.width, button.height);
+    context.strokeStyle = "black";
+    context.lineWidth = 3;
+    context.strokeRect(button.posx, button.posy, button.width, button.height);
+    context.fillStyle = "white";
+    context.font = FONT_STYLE;
+    context.fillText(button.text, button.posx + button.textPosx, button.posy + button.textPosy);
 };
 //# sourceMappingURL=render.js.map

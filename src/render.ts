@@ -156,6 +156,8 @@ const renderSingleCard = function (context: CanvasRenderingContext2D, posx: numb
       }
     
       renderStartButton(context, START_BUTTON)
+      if(autoFinishUserOption)
+        renderAutoFinishBtn(context, AUTOFINISH_BTN)
     }
     
     const renderEndGame = function(context:CanvasRenderingContext2D, label: typeof END_GAME_SIGN){
@@ -172,4 +174,15 @@ const renderSingleCard = function (context: CanvasRenderingContext2D, posx: numb
       const mins = minutes > 9 ? minutes : "0" + minutes
       const secs = seconds > 9 ? seconds : "0" + seconds
       context.fillText(label.textTime + mins + " : " + secs, label.posx + label.textTimePosx,label.posy +  label.textTimePosy)
+    }
+
+    const renderAutoFinishBtn = function(context:CanvasRenderingContext2D, button: typeof AUTOFINISH_BTN){
+      context.fillStyle = "#555"
+      context.fillRect(button.posx, button.posy, button.width, button.height)
+      context.strokeStyle = "black"
+      context.lineWidth = 3
+      context.strokeRect(button.posx, button.posy, button.width, button.height)
+      context.fillStyle = "white"
+      context.font = FONT_STYLE
+      context.fillText(button.text, button.posx + button.textPosx,button.posy +  button.textPosy)
     }

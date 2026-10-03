@@ -16,7 +16,7 @@ const OFFSCREEN_POS = 2000
   const suits: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
   
   for (let i = 0; i < 4; i++) {
-    for (let j = 1; j <= 13; j++) {
+    for (let j = 1; j <=13 ; j++) {
       const card: Card = {
         suit: suits[i],
         value: j,

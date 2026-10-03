@@ -35,12 +35,21 @@ const END_GAME_SIGN = {
     posy: 260,
     width: 820,
     height: 300,
-    text: "YOU WON!!",
-    textTime: "\nTime: ",
-    textPosx: 150,
-    textPosy: 100,
+    text: "CONGRATS!",
+    textTime: "\n  Time:  ",
+    textPosx: 200,
+    textPosy: 130,
     textTimePosx: 200,
     textTimePosy: 200,
+};
+const AUTOFINISH_BTN = {
+    posx: 230,
+    posy: 840,
+    width: 250,
+    height: 60,
+    text: "AUTOFINISH?",
+    textPosx: 15,
+    textPosy: 40
 };
 const positionX = {
     stockDeck: 100,

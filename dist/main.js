@@ -21,6 +21,7 @@ let minutes = 0;
 let seconds = 0;
 let lastPointUp = Date.now();
 let currentPointUp = 0;
+let autoFinishUserOption = false;
 for (let i = 0; i < 7; i++)
     tableau.push([]); //es necesario inicializar cada array con uno vacio. Pide las lecciones al agente para mas info
 const suffle = function (stockDeck) {
@@ -66,6 +67,7 @@ if (context) {
     renderFoundation(context, positionX.foundations.diamonds, positionY.upper_row, "diamonds");
     renderFoundation(context, positionX.foundations.clubs, positionY.upper_row, "clubs");
     renderFoundation(context, positionX.foundations.spades, positionY.upper_row, "spades");
+    renderStartButton(context, START_BUTTON);
     if (stockDeck.length > 0) {
         renderSingleCard(context, positionX.stockDeck, positionY.upper_row, stockDeck[stockDeck.length - 1]);
         renderCardsLeftInStock(context, positionX.stockDeck + CARDS_LEFT_IN_STOCK_POSX, positionY.upper_row + CARDS_LEFT_IN_STOCK_POSY);
@@ -176,7 +178,29 @@ if (context) {
             gameWon = false;
             renderAll(context, x, y);
             startTime = Date.now();
+            autoFinishUserOption = false;
             return;
+        }
+        if (autoFinishUserOption === true &&
+            clickInRect(x, y, AUTOFINISH_BTN.posx, AUTOFINISH_BTN.posy, AUTOFINISH_BTN.width, AUTOFINISH_BTN.height)) {
+            while (gameWon === false) {
+                const lowestFoundation = suits.reduce((best, suit) => foundations[suit].length < foundations[best].length ? suit : best);
+                const foundationSelected = foundations[lowestFoundation];
+                const cardPiles = [...tableau, wasteDeck, stockDeck];
+                for (const pile of cardPiles) {
+                    const index = pile.findIndex(card => lowestFoundation === card.suit &&
+                        foundationSelected.length + 1 === card.value);
+                    if (index !== -1) {
+                        const foundCard = pile.splice(index, 1)[0];
+                        foundCard.faceUp = true;
+                        foundationSelected.push(foundCard);
+                        break;
+                    }
+                    console.log("card not found"); //Supongo nunca deberia llegar a esta condicion
+                }
+                wrapItUp(x, y);
+                renderAll(context, x, y);
+            }
         }
         //esto tiene que estar despues del shuffle button
         if (wrapItUp(x, y))
@@ -307,7 +331,15 @@ if (context) {
             lastPointUp = Date.now();
         }
         renderAll(context, x, y);
+        if (isTableauAllFaceUp(tableau)) {
+            autoFinishUserOption = true;
+        }
     });
+    function isTableauAllFaceUp(tableau) {
+        if (tableau.flat().every(element => element.faceUp === true))
+            return true;
+        return false;
+    }
     function isGameWon() {
         return foundations.hearts.length === 13 &&
             foundations.diamonds.length === 13 &&
@@ -329,32 +361,83 @@ if (context) {
         }
         return gameWon;
     };
+    document.addEventListener("keyup", (event) => {
+        if (event.key === "d") {
+            tableau.forEach((element, index1) => {
+                console.log("tableau column = ", index1, '\n');
+                element.forEach((cards, index2) => {
+                    console.log("card pos = ", index2, " value is = ", cards.value, "  and posx,y = ", cards.posx, "  ", cards.posy, "  faceup = ", cards.faceUp);
+                });
+            });
+            console.log("done" + '\n');
+        }
+        if (event.key === "s") {
+            console.log("waste deck = \n");
+            wasteDeck.forEach((element, index) => console.log("card number = ", index, " Value = ", element.value));
+            console.log("done" + '\n');
+        }
+        if (event.key === "a") {
+            console.log("Hearts = \n");
+            foundations['hearts'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value));
+            console.log("diamonds = \n");
+            foundations['diamonds'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value));
+            console.log("clubs = \n");
+            foundations['clubs'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value));
+            console.log("spades = \n");
+            foundations['spades'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value));
+            console.log("done" + '\n');
+        }
+        if (event.key === "z") {
+            console.log(allCards);
+            stockDeck = [];
+            wasteDeck = [];
+            tableau.forEach(element => {
+                element.length = 0;
+            });
+            suits.forEach(suit => foundations[suit] = []);
+            allCards.forEach(element => {
+                element.faceUp = true;
+                element.posx = 2000;
+                element.posy = 2000;
+            });
+            allCards[38].faceUp = false;
+            let aux1 = allCards.slice(0, 12);
+            for (let i = 0; i < 11; i++)
+                foundations["hearts"].push(aux1[i]);
+            aux1 = allCards.slice(13, 25);
+            for (let i = 0; i < 11; i++)
+                foundations["diamonds"].push(aux1[i]);
+            aux1 = allCards.slice(26, 38);
+            for (let i = 0; i < 11; i++)
+                foundations["clubs"].push(aux1[i]);
+            aux1 = allCards.slice(39, 51);
+            for (let i = 0; i < 11; i++)
+                foundations["spades"].push(aux1[i]);
+            stockDeck.push(allCards[11]);
+            wasteDeck.push(allCards[24]);
+            tableau[2].push(allCards[38]);
+            tableau[2].push(allCards[51]);
+            tableau[3].push(allCards[12]);
+            tableau[3].push(allCards[25]);
+            tableau[4].push(allCards[37]);
+            tableau[4].push(allCards[50]);
+            allCards[38].posx = columnPositionsX[2];
+            allCards[38].faceUp = false;
+            allCards[51].posx = columnPositionsX[2];
+            allCards[12].posx = columnPositionsX[3];
+            allCards[12].faceUp = false;
+            allCards[25].posx = columnPositionsX[3];
+            allCards[37].posx = columnPositionsX[4];
+            allCards[37].faceUp = false;
+            allCards[50].posx = columnPositionsX[4];
+            allCards[38].posy = positionY.lower_row;
+            allCards[51].posy = positionY.lower_row + positionY.lower_row_card_offset;
+            allCards[12].posy = positionY.lower_row;
+            allCards[25].posy = positionY.lower_row + positionY.lower_row_card_offset;
+            allCards[37].posy = positionY.lower_row;
+            allCards[50].posy = positionY.lower_row + positionY.lower_row_card_offset;
+            renderAll(context, 0, 0);
+        }
+    });
 }
-// document.addEventListener("keyup", (event) => {
-//   if (event.key === "d") {
-//     tableau.forEach((element, index1) => {
-//       console.log("tableau column = ", index1, '\n')
-//       element.forEach((cards, index2) => {
-//         console.log("card pos = ", index2, " value is = ", cards.value, "  and posx,y = ", cards.posx, "  ", cards.posy, "  faceup = ", cards.faceUp)
-//       })
-//     })
-//     console.log("done" + '\n')
-//   }
-//   if (event.key === "s") {
-//     console.log("waste deck = \n")
-//     wasteDeck.forEach((element, index) => console.log("card number = ", index, " Value = ", element.value))
-//     console.log("done" + '\n')
-//   }
-//   if (event.key === "a") {
-//     console.log("Hearts = \n")
-//     foundations['hearts'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value))
-//     console.log("diamonds = \n")
-//     foundations['diamonds'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value))
-//     console.log("clubs = \n")
-//     foundations['clubs'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value))
-//     console.log("spades = \n")
-//     foundations['spades'].forEach((element, index) => console.log("card number = ", index, " Value = ", element.value))
-//     console.log("done" + '\n')
-//   }
-// })
 //# sourceMappingURL=main.js.map
